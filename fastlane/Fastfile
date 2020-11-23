@@ -17,13 +17,15 @@ default_platform(:ios)
 
 platform :ios do
   desc "Description of what the lane does"
-  lane :custom_lane do
+  lane :custom_lane do |options|
+
+    build_theme = options[:build_theme]
     # add actions here: https://docs.fastlane.tools/actions
 
 #cocoapods
 increment_version_number_in_plist
 update_settings_bundle key: "theme",
-                     value: "green"
+                     value: build_theme
 gym(scheme: "SettingsTest",
   export_method: "development",
   configuration: "Release",
