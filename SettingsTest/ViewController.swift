@@ -1,29 +1,69 @@
 //
 //  ViewController.swift
 //  SettingsTest
-//
-//  Created by Abhilash on 29/03/17.
-//  Copyright © 2017 Abhilash. All rights reserved.
-//
+
 
 import UIKit
 
 class ViewController: UIViewController {
     
     override func viewDidLoad() {
-        super.viewDidLoad()
         registerSettingsBundle()
+        super.viewDidLoad()
+        
         NotificationCenter.default.addObserver(self, selector: #selector(ViewController.defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)
+        
         defaultsChanged()
     }
-    func registerSettingsBundle(){
-        let appDefaults = [String:AnyObject]()
-        UserDefaults.standard.register(defaults: appDefaults)
+    
+    private func loadDefaults() {
+        let userDefaults = UserDefaults.standard
+
+        let pathStr = Bundle.main.bundlePath
+        let settingsBundlePath = (pathStr as NSString).appendingPathComponent("Settings.bundle")
+        let finalPath = (settingsBundlePath as NSString).appendingPathComponent("Root.plist")
+        let settingsDict = NSDictionary(contentsOfFile: finalPath)
+        guard let prefSpecifierArray = settingsDict?.object(forKey: "PreferenceSpecifiers") as? [[String: Any]] else {
+            return
+        }
+
+        var defaults = [String: Any]()
+
+        for prefItem in prefSpecifierArray {
+            guard let key = prefItem["Key"] as? String else {
+                continue
+            }
+            defaults[key] = prefItem["DefaultValue"]
+        }
+        userDefaults.register(defaults: defaults)
     }
-    func defaultsChanged(){
-        if UserDefaults.standard.bool(forKey: "RedThemeKey") {
-            self.view.backgroundColor = UIColor.red
+    
+    func registerSettingsBundle(){
+        loadDefaults();
+    }
+    
+    @objc func defaultsChanged(){
+    
+        var theme = false
+        for (key, value) in UserDefaults.standard.dictionaryRepresentation() {
+            //print("\(key) = \(value) \n")
         
+            if(key.elementsEqual("theme")) {
+                print("\(key) = \(value) \n")
+                if let b = value as? String {
+                    if(b.elementsEqual("red")) {
+                        theme = true
+                    }
+                } else {
+                    print("Error") // Was not a string
+                }
+            }
+            
+        }
+        
+     
+        if theme {
+            self.view.backgroundColor = UIColor.red
         }
         else {
             self.view.backgroundColor = UIColor.green
