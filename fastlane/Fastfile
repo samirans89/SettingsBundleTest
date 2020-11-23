@@ -26,23 +26,28 @@ platform :ios do
 increment_version_number_in_plist
 update_settings_bundle key: "theme",
                      value: build_theme
+ipaName = "SettingsTest"
+ipaName = (ipaName + "-" +  ENV["BUILD_NUMBER"]) unless ENV["BUILD_NUMBER"].nil? #{nameSuffix}_#{versionName}_#{buildNumber}.ipa"
+ipaName += ".ipa"
+puts "ipa file name is: " + ipaName
 gym(scheme: "SettingsTest",
   export_method: "development",
   configuration: "Release",
   clean: true,
-  output_directory: "build")
+  output_directory: "build",
+  output_name: ipaName)
 
     upload_to_browserstack_app_live(
   browserstack_username: ENV["BROWSERSTACK_USERNAME"],
   browserstack_access_key: ENV["BROWSERSTACK_ACCESS_KEY"],
-  file_path: "/Users/samiran/Documents/se/repos/SettingsBundleTest/build/SettingsTest.ipa"
+  file_path: "build/" + ipaName
 )
 
 upload_to_browserstack_app_automate(
 browserstack_username: ENV["BROWSERSTACK_USERNAME"],
 browserstack_access_key: ENV["BROWSERSTACK_ACCESS_KEY"],
-file_path: "/Users/samiran/Documents/se/repos/SettingsBundleTest/build/SettingsTest.ipa",
-custom_id: "SettingsTest"
+file_path: "build/" + ipaName,
+custom_id: "SettingsTest-" + build_theme
 )
 
 clean_build_artifacts
